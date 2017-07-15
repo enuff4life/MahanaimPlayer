@@ -6,7 +6,7 @@ namespace Mahanaim
 {
     class AudioPlayback : IDisposable
     {
-        private IWavePlayer playbackDevice;
+        private IWavePlayer playbackDevice; 
         public WaveStream fileStream;
 
         public event EventHandler<FftEventArgs> FftCalculated;

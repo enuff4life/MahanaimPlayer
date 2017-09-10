@@ -8,7 +8,8 @@
         xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
         mc:Ignorable="d"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-            BorderThickness="0" 
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      BorderThickness="0" 
             GlowBrush="Black"
             ResizeMode="CanResizeWithGrip"
             WindowStartupLocation="CenterScreen"
@@ -134,8 +135,8 @@
                     </Grid.RowDefinitions>
                     
                     <Label Grid.Row="0" Content="From" Name="lblFrom" />
-                    <ListView 
-                        Grid.Row="1" Margin="1" BorderBrush="Blue"
+                    <!--<ListView 
+                        Grid.Row="2" Margin="1" BorderBrush="Blue"
                         BorderThickness="1"
                         SelectedIndex="0" 
                         Name="FolderListViewLeft"
@@ -150,7 +151,29 @@
                                 <GridViewColumn Header="FullName" DisplayMemberBinding="{Binding FullName}"  />
                             </GridView>
                         </ListView.View>
-                    </ListView>
+                    </ListView>-->
+                    <DataGrid 
+                        Grid.Row="1"
+                        Margin="1" BorderBrush="Blue"
+                        BorderThickness="2,0"
+                        HeadersVisibility="All"
+                        Name="LeftGridView"
+                        ItemsSource="{Binding Path=Albums}"
+                        RowHeaderWidth="20"
+                        SelectionChanged="DataGrid_SelectionChanged"
+                        AutoGenerateColumns="False"
+                        LoadingRow="DataGrid_LoadingRow"
+                        CanUserAddRows="false"
+                        CellEditEnding="DataGrid_CellEditEnding"
+                        CurrentCellChanged="DataGrid_CurrentCellChanged"
+                        >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Name}" Header="Name"  IsReadOnly="False" />
+                            <DataGridTextColumn Binding="{Binding CreateTime}" Header="Create Time" IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding FullName}" Header="File"  IsReadOnly="True" />
+                        </DataGrid.Columns>
+
+                    </DataGrid>
                 </Grid>
 
             </Grid> <!-- End of Left -->

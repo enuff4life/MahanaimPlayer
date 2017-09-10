@@ -21,6 +21,7 @@ using System.Windows.Threading;
 using System.ComponentModel;
 using Mahanaim.SoundTouch;
 
+
 namespace Mahanaim
 {
     /// <summary>
@@ -42,6 +43,8 @@ namespace Mahanaim
         private double sliderPosition;
         const double sliderMax = 100.0;
 
+        // Editing
+        private bool IsEditEnding = false;
 
         private AudioPlayback audioPlayback;
         private VarispeedSampleProvider speedControl; //todo
@@ -57,7 +60,7 @@ namespace Mahanaim
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             audioPlayback = new AudioPlayback();
-            
+
             foreach (string s in Directory.GetLogicalDrives())
             {
                 TreeViewItem item = new TreeViewItem();
@@ -140,7 +143,7 @@ namespace Mahanaim
             else
                 lblFrom.Content = SelectedImagePath;
 
-                GetFolderList(SelectedImagePath, sender);
+            GetFolderList(SelectedImagePath, sender);
         }
 
         private void GetFolderList(string path, object sender)
@@ -164,36 +167,47 @@ namespace Mahanaim
                     }
                     else
                     {
-                        FolderListViewLeft.Items.Clear();
+                        LeftGridView.Items.Clear();
+                        List<DisplayIndex> list = new List<DisplayIndex>();
                         foreach (FileInfo f in files)
                         {
-                            if(f.Extension == ".mp3")
-                                FolderListViewLeft.Items.Add(new DisplayIndex(){ Name = f.Name , CreateTime = f.CreationTime, FullName = f.FullName});
+                            if (f.Extension == ".mp3")
+                            {
+                                list.Add(new DisplayIndex()
+                                {
+                                    Name = f.Name.Replace(f.Extension, ""),
+                                    CreateTime = f.CreationTime,
+                                    FullName = f.FullName
+                                });
+                            }
                         }
-                    } 
+                        LeftGridView.ItemsSource = list;
+                    }
                 }
                 else
                 {
                     MessageBox.Show("Folder doesn't exist");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
         }
 
-        private void FolderListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             StopPlayer();
 
-            ListView lv = (ListView)sender;
+            DataGrid lv = (DataGrid)sender;
             DisplayIndex item = (DisplayIndex)lv.SelectedItem;
             SelectedFullPath = item.FullName;
             Debug.WriteLine("Selected ::: " + item.FullName);
         }
+
+
         #endregion
-         
+
         /// <summary>
         /// Calculate & Update slider position
         /// </summary>
@@ -227,7 +241,7 @@ namespace Mahanaim
         #region Player
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            DisplayIndex item =  (DisplayIndex)FolderListViewLeft.SelectedItem;
+            DisplayIndex item = (DisplayIndex)LeftGridView.SelectedItem;
 
             if (item == null)
             {
@@ -373,7 +387,7 @@ namespace Mahanaim
             }
 
             // Update ListView
-            FolderListViewLeft.ItemsSource = FolderListViewLeft.ItemsSource;
+            //FolderListViewLeft.ItemsSource = FolderListViewLeft.ItemsSource;
         }
 
         void TrimMp3(string inputPath, string outputPath, TimeSpan begin, TimeSpan end)
@@ -397,8 +411,6 @@ namespace Mahanaim
                 //    output.Write(reader.Id3v2Tag.RawData,
                 //                 0,
                 //                 reader.Id3v2Tag.RawData.Length);
-
-
                 //}
                 using (var writer = File.Create(outputPath))
                 {
@@ -431,6 +443,51 @@ namespace Mahanaim
             }
         }
 
+        private void DataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            // Adding row index to DataGrid
+            e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+        }
+
+        private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (IsEditEnding)
+            {
+                return;
+            }
+            try
+            {
+                IsEditEnding = true;
+                var prev = (DisplayIndex)e.Row.Item;
+                var text = ((TextBox)e.EditingElement).Text;
+
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    MessageBox.Show("It cannot be empy name");
+
+                    e.Cancel = true;
+                    (sender as DataGrid).CancelEdit(DataGridEditingUnit.Cell);
+
+                }
+                else if (prev.Name != text)
+                {
+                    // todo: go change it!
+                    Debug.WriteLine("#Edited to " + text);
+                }
+            }
+            finally
+            {
+                IsEditEnding = false;
+            }
+
+
+        }
+
+        private void DataGrid_CurrentCellChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 
     // Columns to show on listbox
